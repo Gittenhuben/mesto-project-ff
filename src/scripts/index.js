@@ -2,7 +2,7 @@ import '../pages/index.css';
 
 import { initialCards } from './cards.js';
 import { handleDeleteCard, handleClickLike, createCard } from './card.js';
-import { showPopup, hidePopup, enablePopupAnimation } from './modal.js';
+import { showPopup, hidePopup, enablePopupAnimation, handleClosePopupByClickOverlay } from './modal.js';
 
 const popupProfile = document.querySelector('.popup_type_edit');
 const popupNewCard = document.querySelector('.popup_type_new-card');
@@ -20,6 +20,9 @@ const inputCardName = popupNewCard.querySelector('input[name="place-name"]');
 const inputCardLink = popupNewCard.querySelector('input[name="link"]');
 const inputProfileName = popupProfile.querySelector('input[name="name"]');
 const inputProfileDescription = popupProfile.querySelector('input[name="description"]');
+const popupProfileCloseButton = popupProfile.querySelector('.popup__close');
+const popupNewCardCloseButton = popupNewCard.querySelector('.popup__close');
+const popupImageCloseButton = popupImage.querySelector('.popup__close');
 
 
 function loadInfoFromProfile() {
@@ -45,7 +48,7 @@ function setPopupImageInfo(link, name) {
 
 function handleClickImage(link, name) {
   setPopupImageInfo(link, name);
-  showPopup(popupImage, true);
+  showPopup(popupImage);
 }
 
 function addCard(cardData, prepend = false) {
@@ -86,9 +89,16 @@ function handleSubmitPopupNewCard(evt) {
   if (addCardFromPopup()) hidePopup(popupNewCard);
 }
 
+function handleClosePopupByClickButton(evt) {
+  const popup = evt.target.closest('.popup');
+  hidePopup(popup);
+}
+
 function enablePopupNewCard() {
   buttonNewCard.addEventListener('click', handleOpenPopupNewCard);
   popupNewCardForm.addEventListener('submit', handleSubmitPopupNewCard);
+  popupNewCardCloseButton.addEventListener('click', handleClosePopupByClickButton);
+  popupNewCard.addEventListener('mousedown', handleClosePopupByClickOverlay);
 }
 
 function handleOpenPopupProfile() {
@@ -105,6 +115,14 @@ function handleSubmitPopupProfile(evt) {
 function enablePopupProfile() {
   buttonEditProfile.addEventListener('click', handleOpenPopupProfile);
   popupProfileForm.addEventListener('submit', handleSubmitPopupProfile);
+  popupProfileCloseButton.addEventListener('click', handleClosePopupByClickButton);
+  popupProfile.addEventListener('mousedown', handleClosePopupByClickOverlay);
+}
+
+function enablePopupImage() {
+  popupImageCloseButton.addEventListener('click', handleClosePopupByClickButton);
+  popupImageImg.addEventListener('click', handleClosePopupByClickButton);
+  popupImage.addEventListener('mousedown', handleClosePopupByClickOverlay);
 }
 
 addCardsSet(initialCards);
@@ -115,3 +133,4 @@ enablePopupAnimation(popupImage);
 
 enablePopupNewCard();
 enablePopupProfile();
+enablePopupImage();
