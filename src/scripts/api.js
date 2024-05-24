@@ -4,74 +4,77 @@ const serverCardsLink = 'https://nomoreparties.co/v1/wff-cohort-15/cards';
 const serverLikesLink = serverCardsLink + '/likes';
 const serverAvatarLink = serverProfileLink + '/avatar';
 
+const headers = {
+  authorization: token,
+  'Content-Type': 'application/json'
+}
+
+function getResponseData(res) {
+  if (res.ok) {
+    return res.json();
+  } else {
+    return Promise.reject(`Ошибка: ${res.status}`);
+  }
+}
 
 function getFromServer(link) {
   return fetch(link, {
-    headers: {
-      authorization: token,
-    }
+    headers: headers,
   })
+    .then(res => getResponseData(res))
+    .catch(err => {
+      console.log('Ошибка загрузки данных с сервера');
+      return Promise.reject(`Ошибка: ${err}`);
+    })
 }
 
 export function loadDataFromServerRequest() {
   return Promise.all([getFromServer(serverProfileLink), getFromServer(serverCardsLink)])
-    .then(responses => Promise.all(responses.map(res => {
-      if (res.ok) {
-        return res.json();
-      } else {
-        return Promise.reject();
-      }
-    })))
 }
 
-export function updateServerProfileRequest(name, about) {
+export function updateServerProfile(name, about) {
   return fetch(serverProfileLink, {
     method: 'PATCH',
-    headers: {
-      authorization: token,
-      'Content-Type': 'application/json'
-    },
+    headers: headers,
     body: JSON.stringify({
       name: name,
       about: about
     })
   })
-    .then(res => {
-      if (!res.ok) return Promise.reject();
+    .then(res => getResponseData(res))
+    .catch(err => {
+      console.log('Ошибка выгрузки профиля на сервер');
+      return Promise.reject(`Ошибка: ${err}`);
     })
 }
 
-export function uploadCardRequest(cardData) {
+export function uploadCard(cardData) {
   return fetch(serverCardsLink, {
     method: 'POST',
-    headers: {
-      authorization: token,
-      'Content-Type': 'application/json'
-    },
+    headers: headers,
     body: JSON.stringify(cardData)
   })
-    .then(res => {
-      if (res.ok) {
-        return res.json();
-      } else {
-        return Promise.reject();
-      }
+    .then(res => getResponseData(res))
+    .then(cardData => cardData._id)
+    .catch(err => {
+      console.log('Ошибка выгрузки карточки на сервер');
+      return Promise.reject(`Ошибка: ${err}`);
     })
 }
 
-export function deleteCardOnServerRequest(cardId) {
+export function deleteCardOnServer(cardId) {
   return fetch(serverCardsLink + '/' + cardId, {
     method: 'DELETE',
-    headers: {
-      authorization: token,
-    }
+    headers: headers
   })
-    .then(res => {
-      if (!res.ok) return Promise.reject();
+    .then(res => getResponseData(res))
+    .catch(err => {
+      console.log('Ошибка удаления карточки на сервере');
+      return Promise.reject(`Ошибка: ${err}`);
     })
 }
 
-export function sendLikeToServerRequest(cardId, like) {
+export function sendLikeToServer(cardId, like) {
   let method;
   if (like) {
     method = 'PUT';
@@ -81,50 +84,26 @@ export function sendLikeToServerRequest(cardId, like) {
   
   return fetch(serverLikesLink + '/' + cardId, {
     method: method,
-    headers: {
-      authorization: token,
-    }
+    headers: headers
   })
-    .then(res => {
-      if (res.ok) {
-        return res.json();
-      } else {
-        return Promise.reject();
-      }
-    }) 
-}
-
-function checkLink(link) {
-  return fetch(link, {
-      method: 'HEAD',
+    .then(res => getResponseData(res))
+    .catch(err => {
+      console.log('Ошибка отправки лайка на сервер');
+      return Promise.reject(`Ошибка: ${err}`);
     })
-      .then(res => {
-        if (!res.ok || !res.headers.get('Content-Type').includes('image')) {
-          console.log('Ошибка: некорректная ссылка');
-          return Promise.reject();
-        }
-      })
-      .catch(() => {
-        console.log('Ошибка проверки ссылки');
-        return Promise.reject();
-      })
 }
 
-export function updateServerAvatarRequest(link) {
-  return checkLink(link)
-    .then(() => {    
-      return fetch(serverAvatarLink, {
-        method: 'PATCH',
-        headers: {
-          authorization: token,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          avatar: link
-        })
+export function updateServerAvatar(link) {
+  return fetch(serverAvatarLink, {
+      method: 'PATCH',
+      headers: headers,
+      body: JSON.stringify({
+        avatar: link
       })
-    })  
-    .then(res => {
-      if (!res.ok) return Promise.reject();
+    })
+    .then(res => getResponseData(res))
+    .catch(err => {
+      console.log('Ошибка выгрузки аватара на сервер');
+      return Promise.reject(`Ошибка: ${err}`);
     })
 }

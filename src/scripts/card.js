@@ -1,25 +1,18 @@
-import { sendLikeToServerRequest } from './api.js';
+import { sendLikeToServer } from './api.js';
 
 const cardTemplate = document.querySelector('#card-template').content;
-
-function sendLikeToServer(cardId, like, cardLikesCounter) {
-  sendLikeToServerRequest(cardId, like)
-    .then(cardData => {
-      if (cardData.likes) cardLikesCounter.textContent = cardData.likes.length || 0;
-    })
-    .catch(() => {
-      console.log('Ошибка отправки лайка на сервер');
-      loadDataFromServer();
-    })
-}
 
 export function handleClickLike(evt) {
   const card = evt.target.closest('.card');
   const cardId = card.dataset.imageId
   const oldLikeStatus = evt.target.classList.contains('card__like-button_is-active');
   const cardLikesCounter = card.querySelector('.card__likes_counter');
-  evt.target.classList.toggle('card__like-button_is-active');
-  sendLikeToServer(cardId, !oldLikeStatus, cardLikesCounter);
+  
+  sendLikeToServer(cardId, !oldLikeStatus)
+    .then(cardData => {
+      evt.target.classList.toggle('card__like-button_is-active');
+      if (cardData.likes) cardLikesCounter.textContent = cardData.likes.length || 0;
+    })
 }
 
 export function createCard(cardData, onDeleteCard, onClickImage, onClickLike, myId) {

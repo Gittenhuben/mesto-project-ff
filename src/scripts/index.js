@@ -1,11 +1,9 @@
 import '../pages/index.css';
 
-import { initialCards } from './cards.js';
 import { createCard, handleClickLike } from './card.js';
 import { showPopup, hidePopup, enablePopupAnimation, handleClosePopupByClickOverlay } from './modal.js';
 import { enableValidation, refreshValidState } from './validation.js';
-import { loadDataFromServerRequest, updateServerProfileRequest, uploadCardRequest,
-         deleteCardOnServerRequest, updateServerAvatarRequest } from './api.js';
+import { loadDataFromServerRequest, updateServerProfile, uploadCard, deleteCardOnServer, updateServerAvatar } from './api.js';
 
 const popupProfile = document.querySelector('.popup_type_edit');
 const popupNewCard = document.querySelector('.popup_type_new-card');
@@ -52,24 +50,17 @@ const validationSettings = {
   errorClass: 'popup__error_visible'
 }
 
-const defaultAvatarLink = new URL('../images/avatar.jpg', import.meta.url);
-const defaultProfile = {
-  about: 'Исследователь океана',
-  avatar: defaultAvatarLink,
-  name: 'Жак-Ив Кусто',
-  _id: 0
-}
 
 let cardForDelete;
 let myId = 0;
 
-function setPendingText(submitButton, state) {
+function setPendingText(submitButton, state, timeout = 600) {
   if (state) {
     submitButton.textContent = 'Сохранение\u2026';
   } else {
     setTimeout(() => {
       submitButton.textContent = 'Сохранить';
-    }, 600);
+    }, timeout);
   }
 }
 
@@ -78,17 +69,17 @@ function loadInfoFromProfile() {
   inputProfileDescription.value = profileDescription.textContent;
 }
 
-function saveInfoToProfile() {
-  profileName.textContent = inputProfileName.value;
-  profileDescription.textContent = inputProfileDescription.value;
+function saveInfoToProfile(data, about) {
+  profileName.textContent = data;
+  profileDescription.textContent = about;
 }
 
 function loadInfoFromAvatar() {
   inputAvatarLink.value = avatar.style.backgroundImage.slice(5,-2);
 }
 
-function saveInfoToAvatar() {
-  avatar.style.backgroundImage = 'url("' + inputAvatarLink.value + '")';
+function saveInfoToAvatar(link) {
+  avatar.style.backgroundImage = 'url("' + link + '")';
 }
 
 function clearCardInfo() {
@@ -152,9 +143,12 @@ function handleSubmitPopupNewCard(evt) {
   evt.preventDefault();
   setPendingText(popupNewCardSubmitButton, true);
   addCardFromPopup()
-    .finally(() => {
+    .then(() => {
       hidePopup(popupNewCard);
       setPendingText(popupNewCardSubmitButton, false);
+    })
+    .catch(() => {
+      setPendingText(popupNewCardSubmitButton, false, 0);
     })
 }
 
@@ -181,11 +175,14 @@ function handleOpenPopupProfile() {
 function handleSubmitPopupProfile(evt) {
   evt.preventDefault();
   setPendingText(popupProfileSubmitButton, true);
-  saveInfoToProfile();
-  updateServerProfile()
-    .finally(() => {
+  updateServerProfile(inputProfileName.value, inputProfileDescription.value)
+    .then(data => {
+      saveInfoToProfile(data.name, data.about);
       hidePopup(popupProfile);
       setPendingText(popupProfileSubmitButton, false);
+    })
+    .catch(() => {
+      setPendingText(popupProfileSubmitButton, false, 0);
     })
 }
 
@@ -215,11 +212,14 @@ function handleOpenPopupAvatar() {
 function handleSubmitPopupAvatar(evt) {
   evt.preventDefault();
   setPendingText(popupAvatarSubmitButton, true);
-  saveInfoToAvatar();
-  updateServerAvatar()
-    .finally(() => {
+  updateServerAvatar(inputAvatarLink.value)
+    .then(data => {
+      saveInfoToAvatar(data.avatar);
       hidePopup(popupAvatar);
       setPendingText(popupAvatarSubmitButton, false);
+    })
+    .catch(() => {
+      setPendingText(popupAvatarSubmitButton, false, 0);
     })
 }
 
@@ -235,9 +235,9 @@ function enablePopupAvatar() {
 function handleSubmitPopupConfirmation(evt) {
   const cardId = cardForDelete.dataset.imageId;
   evt.preventDefault();
-  cardForDelete.remove();
   deleteCardOnServer(cardId)
-    .finally(() => {
+    .then(() => {
+      cardForDelete.remove();
       hidePopup(popupConfirmation);
     })
 }
@@ -247,7 +247,6 @@ function enablePopupConfirmation() {
   popupConfirmationCloseButton.addEventListener('click', handleClosePopupByClickButton);
   popupConfirmation.addEventListener('mousedown', handleClosePopupByClickOverlay);
 }
-
 
 ////// Server interaction
 
@@ -273,46 +272,8 @@ function loadDataFromServer() {
     })
     .catch(() => {
       console.log('Ошибка загрузки данных с сервера');
-      setLocalProfile(defaultProfile);
-      addCardsSet(initialCards);
     })
 }
-
-function updateServerProfile() {
-  return updateServerProfileRequest(profileName.textContent, profileDescription.textContent)
-    .catch(() => {
-      console.log('Ошибка выгрузки профиля на сервер');
-      loadDataFromServer();
-    })
-}
-
-function uploadCard(cardData) {
-  return uploadCardRequest(cardData)
-    .then(cardData => cardData._id)
-    .catch(() => {
-      console.log('Ошибка выгрузки карточки на сервер');
-      loadDataFromServer();
-    })
-}
-
-function deleteCardOnServer(cardId) {
-  return deleteCardOnServerRequest(cardId)
-    .catch(() => {
-      console.log('Ошибка удаления карточки на сервере');
-      loadDataFromServer();
-    })
-}
-
-
-function updateServerAvatar() {
-  const link = avatar.style.backgroundImage.slice(5,-2);
-  return updateServerAvatarRequest(link)
-    .catch(() => {
-      console.log('Ошибка выгрузки аватара на сервер');
-      loadDataFromServer();
-    })
-}
-
 
 
 document.querySelectorAll('.popup').forEach(popup => enablePopupAnimation(popup));
