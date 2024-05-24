@@ -9,6 +9,12 @@
   margin: 0 29px 0 0;
 }
 
+.profile__image:hover {
+  cursor:
+    url('../../../images/edit-icon.cur') 0 26,
+    auto;
+}
+
 @media screen and (max-width: 740px) {
   .profile__image {
     margin: 0 10px 0 0;
