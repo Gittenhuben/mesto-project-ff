@@ -129,6 +129,10 @@ function addCardFromPopup() {
       cardData._id = res;
       addCard(cardData, true);
     })
+    .catch(err => {
+      console.log('Ошибка выгрузки карточки на сервер');
+      return Promise.reject(`Ошибка: ${err}`);
+    })
 }
 
 ////// NewCard Popup
@@ -239,6 +243,9 @@ function handleSubmitPopupConfirmation(evt) {
     .then(() => {
       cardForDelete.remove();
       hidePopup(popupConfirmation);
+    })
+    .catch(() => {
+      console.log('Ошибка удаления карточки на сервере');
     })
 }
 

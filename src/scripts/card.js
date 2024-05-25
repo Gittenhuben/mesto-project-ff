@@ -13,6 +13,9 @@ export function handleClickLike(evt) {
       evt.target.classList.toggle('card__like-button_is-active');
       if (cardData.likes) cardLikesCounter.textContent = cardData.likes.length || 0;
     })
+    .catch(() => {
+      console.log('Ошибка отправки лайка на сервер');
+    })
 }
 
 export function createCard(cardData, onDeleteCard, onClickImage, onClickLike, myId) {
