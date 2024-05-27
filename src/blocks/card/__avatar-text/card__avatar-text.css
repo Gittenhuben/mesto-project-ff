@@ -1,0 +1,18 @@
+.card__avatar-text {
+  content: " ";
+  display: block;
+  width: 60px;
+  font-size: 12px;
+  color: #fff;
+  -webkit-text-stroke: 3px #000;
+  paint-order: stroke fill;
+  position: absolute;
+  top: 68px;
+  left: 15px;
+  text-align: center;
+  user-select: none;
+}
+
+.card__avatar-text:hover {
+  cursor: pointer;
+}

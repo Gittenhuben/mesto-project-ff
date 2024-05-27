@@ -91,6 +91,7 @@ function setPopupImageInfo(link, name) {
   popupImageImg.src = link;
   popupImageImg.alt = name;
   popupImageCaption.textContent = name;
+  popupImageCaption.style.whiteSpace = 'pre';
 }
 
 function handleClickImage(link, name) {
@@ -123,6 +124,9 @@ function addCardFromPopup() {
   cardData.name = inputCardName.value;
   cardData.link = inputCardLink.value;
   cardData.owner = { _id: myId };
+  cardData.owner.avatar = avatar.style.backgroundImage.slice(5,-2);
+  cardData.owner.name = profileName.textContent;
+  cardData.owner.about = profileDescription.textContent;
   
   return uploadCard(cardData)
     .then(res => {
