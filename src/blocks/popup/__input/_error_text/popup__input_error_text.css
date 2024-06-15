@@ -1,7 +1,7 @@
 .popup__input_error_text {
   visibility: hidden;
   display: block;
-  min-height: 14px;
+  min-height: 28px;
   font-size: 12px;
   color: #f00;
   padding-bottom: 1px;
