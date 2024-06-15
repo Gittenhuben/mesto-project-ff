@@ -1,4 +1,4 @@
-https://github.com/Gittenhuben/mesto-project-ff
+# Проект "Mesto"
+**Выполненная работа:** разработка функционала сайта (JS), механизма взаимодействия с API
 
-Published site:  
-https://gittenhuben.github.io/mesto-project-ff/
+**Результат:** https://gittenhuben.github.io/mesto-project-ff/
